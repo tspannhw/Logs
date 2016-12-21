@@ -1,4 +1,4 @@
-package com.airisdata.referenceapp
+package com.dataflowdeveloper.logs
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.serializer.{KryoSerializer}
@@ -55,15 +55,14 @@ object Logs {
   def main(args: Array[String]) {
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
     Logger.getLogger("org.apache.spark.storage.BlockManager").setLevel(Level.ERROR)
-    Logger.getLogger("com.airisdata.risk").setLevel(Level.INFO)
-    Logger.getLogger("com.airisdata.risk.VarRunner").setLevel(Level.INFO)
+    Logger.getLogger("com.dataflowdeveloper.logs").setLevel(Level.INFO)
 
-    val log = Logger.getLogger("com.airisdata.referenceapp")
+    val log = Logger.getLogger("com.dataflowdeveloper.logs")
     log.info("Started Logs Analysis")
 
     val sparkConf = new SparkConf().setAppName("Logs")
 
-    sparkConf.set("spark.cores.max", "4")
+    sparkConf.set("spark.cores.max", "16")
     sparkConf.set("spark.serializer", classOf[KryoSerializer].getName)
     sparkConf.set("spark.sql.tungsten.enabled", "true")
     sparkConf.set("spark.eventLog.enabled", "true")
@@ -97,9 +96,9 @@ object Logs {
         df1.head()
         df1.explain()
 
-        //df1.write.format("parquet").mode(org.apache.spark.sql.SaveMode.Append).partitionBy("clientIp").parquet("parquetresults")
+        df1.write.format("parquet").mode(org.apache.spark.sql.SaveMode.Append).partitionBy("clientIp").parquet("parquetresults")
         df1.write.format("avro").mode(org.apache.spark.sql.SaveMode.Append).partitionBy("statusCode").avro("avroresults")
-        //df1.write.format("json").mode(org.apache.spark.sql.SaveMode.Append).partitionBy("clientIp").json("jsonresults")
+        df1.write.format("json").mode(org.apache.spark.sql.SaveMode.Append).partitionBy("clientIp").json("jsonresults")
         println("After writing results")
       } catch {
         case e: Exception =>
@@ -117,7 +116,6 @@ object Logs {
         contentTotal / contentSizes.count,
         contentSizes.min,
         contentSizes.max))
-
 
       // Compute Response Code to Count.
       val responseCodeToCount = accessLogs
